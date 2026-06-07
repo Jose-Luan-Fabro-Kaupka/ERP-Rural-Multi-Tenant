@@ -1,0 +1,39 @@
+{% extends "api/base.html" %}
+{% block title %}Registrar — Agro{% endblock %}
+{% block body %}
+<div class="card">
+  <h1>Criar conta</h1>
+  <p class="sub">Use o mesmo domínio do tenant (ex.: fazenda1.localhost). O usuário fica só neste inquilino.</p>
+  {% if registration_disabled %}
+  <div class="errors">O cadastro de novos usuários foi desativado pelo administrador da plataforma.</div>
+  {% elif registration_limit %}
+  <div class="errors">Este inquilino atingiu o limite de usuários permitido.</div>
+  {% endif %}
+  {% if form.non_field_errors %}
+  <div class="errors">{{ form.non_field_errors }}</div>
+  {% endif %}
+  {% if not registration_disabled and not registration_limit %}
+  <form method="post" action="{% url 'register' %}">
+    {% csrf_token %}
+    <label for="id_username">Usuário</label>
+    {{ form.username }}
+    {% if form.username.errors %}<div class="errors">{{ form.username.errors }}</div>{% endif %}
+    <label for="id_email">E-mail</label>
+    {{ form.email }}
+    {% if form.email.errors %}<div class="errors">{{ form.email.errors }}</div>{% endif %}
+    <label for="id_password1">Senha</label>
+    {{ form.password1 }}
+    {% if form.password1.errors %}<div class="errors">{{ form.password1.errors }}</div>{% endif %}
+    <label for="id_password2">Confirmar senha</label>
+    {{ form.password2 }}
+    {% if form.password2.errors %}<div class="errors">{{ form.password2.errors }}</div>{% endif %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn">Criar conta</button>
+  </form>
+  {% endif %}
+  <div class="row">
+    <span class="muted">Já tem conta?</span>
+    <a href="{% url 'login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Entrar</a>
+  </div>
+</div>
+{% endblock %}

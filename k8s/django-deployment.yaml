@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-api
+  namespace: agro-saas
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-api
+  template:
+    metadata:
+      labels:
+        app: django-api
+    spec:
+      initContainers:
+        - name: migrate-schemas
+          image: agro-api:latest  # use a imagem buildada do projeto
+          command:
+            - /bin/sh
+            - -c
+            - python manage.py ensure_postgres_database && python manage.py migrate_schemas --noinput && python manage.py collectstatic --noinput
+          envFrom:
+            - configMapRef:
+                name: agro-django-config
+            - secretRef:
+                name: agro-django-secret
+          env:
+            - name: DB_HOST
+              value: postgres
+      containers:
+        - name: django
+          image: agro-api:latest
+          command:
+            - gunicorn
+            - config.wsgi:application
+            - --bind
+            - "0.0.0.0:8000"
+            - --workers
+            - "2"
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: agro-django-config
+            - secretRef:
+                name: agro-django-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /healthz/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: agro.local
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: agro.local
+            initialDelaySeconds: 5
+            periodSeconds: 5

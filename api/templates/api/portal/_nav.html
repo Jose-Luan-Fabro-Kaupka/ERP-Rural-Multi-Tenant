@@ -1,0 +1,38 @@
+{% with n=request.resolver_match.url_name %}
+<nav class="nav-app">
+  <a href="{% url 'tenant_home' %}" {% if n == 'tenant_home' %}class="active"{% endif %}>Início</a>
+  <span class="sep">·</span>
+  {% if perms.api.view_propriedade %}
+  <a href="{% url 'propriedade_list' %}" {% if n and 'propriedade' in n %}class="active"{% endif %}>Propriedades</a>
+  {% endif %}
+  {% if perms.api.view_produto %}
+  <a href="{% url 'produto_list' %}" {% if n and 'produto' in n %}class="active"{% endif %}>Produtos</a>
+  {% endif %}
+  {% if perms.api.view_insumo %}
+  <a href="{% url 'insumo_list' %}" {% if n and 'insumo' in n and 'aplicacao' not in n %}class="active"{% endif %}>Insumos</a>
+  {% endif %}
+  {% if perms.api.view_plantacao %}
+  <a href="{% url 'plantacao_list' %}" {% if n and 'plantacao' in n %}class="active"{% endif %}>Plantações</a>
+  {% endif %}
+  {% if perms.api.view_compra %}
+  <a href="{% url 'compra_list' %}" {% if n and 'compra' in n %}class="active"{% endif %}>Compras</a>
+  {% endif %}
+  {% if perms.api.view_venda %}
+  <a href="{% url 'venda_list' %}" {% if n and 'venda' in n %}class="active"{% endif %}>Vendas</a>
+  {% endif %}
+  {% if perms.api.view_aplicacaoinsumo %}
+  <a href="{% url 'aplicacao_list' %}" {% if n and 'aplicacao' in n %}class="active"{% endif %}>Aplicações</a>
+  {% endif %}
+  {% if perms.api.view_propriedade %}
+  <a href="{% url 'relatorios' %}" {% if n == 'relatorios' or n == 'relatorio_export_csv' or n == 'relatorio_export_pdf' %}class="active"{% endif %}>Relatórios</a>
+  {% endif %}
+  {% if perms.api.view_alerta %}
+  <a href="{% url 'alerta_list' %}" {% if n == 'alerta_list' or n == 'alerta_marcar_lida' %}class="active"{% endif %}>Alertas{% if nav_alertas_nao_lidos %} ({{ nav_alertas_nao_lidos }}){% endif %}</a>
+  {% endif %}
+  <span class="sep">·</span>
+  <form method="post" action="{% url 'logout' %}" style="display:inline;margin:0;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-ghost" style="margin:0;">Sair</button>
+  </form>
+</nav>
+{% endwith %}

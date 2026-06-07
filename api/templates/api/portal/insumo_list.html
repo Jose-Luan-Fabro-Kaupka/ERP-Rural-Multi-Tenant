@@ -1,0 +1,36 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Insumos — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Insumos</h1>
+  {% if perms.api.add_insumo %}
+  <a href="{% url 'insumo_create' %}" class="btn btn-row">Novo insumo</a>
+  {% endif %}
+</div>
+<p class="sub" style="margin-top:0;">Fertilizantes, defensivos, sementes e demais insumos (tipo e unidade de medida).</p>
+<table class="data">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Tipo</th>
+      <th>Unidade</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr>
+      <td>{{ o.nome }}</td>
+      <td>{% if o.tipo %}{{ o.tipo }}{% else %}—{% endif %}</td>
+      <td>{{ o.medida_unidade }}</td>
+      <td>
+        {% if perms.api.change_insumo %}<a href="{% url 'insumo_update' o.pk %}">Editar</a>{% endif %}
+        {% if perms.api.delete_insumo %}{% if perms.api.change_insumo %} · {% endif %}<a href="{% url 'insumo_delete' o.pk %}">Excluir</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="muted">Nenhum insumo cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

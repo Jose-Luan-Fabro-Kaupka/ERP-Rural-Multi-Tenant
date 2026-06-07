@@ -1,0 +1,30 @@
+# Validação manual do HPA (item de teste de carga / escalonamento):
+# 1) kubectl apply -f k8s/ (namespace agro-saas alinhado aos manifests).
+# 2) Gerar carga: ./scripts/run_loadtest.sh (ou locust com --users / --spawn-rate).
+# 3) kubectl get hpa -n agro-saas -w  e  kubectl top pods -n agro-saas
+#    — com CPU/memória acima dos alvos, o Deployment deve escalar até maxReplicas.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: django-api-hpa
+  namespace: agro-saas
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: django-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

@@ -1,0 +1,25 @@
+{% extends "api/base.html" %}
+{% block title %}Entrar na fazenda — Agro{% endblock %}
+{% block body %}
+<div class="card">
+  <h1>Entrar na fazenda</h1>
+  <p class="sub">
+    Informe o identificador da sua fazenda (mesmo valor usado no cadastro do domínio no admin).
+    Você será enviado à tela de login correto.
+  </p>
+  {% if error %}
+  <div class="errors">{{ error }}</div>
+  {% endif %}
+  <form method="post" action="{% url 'entrar_fazenda' %}">
+    {% csrf_token %}
+    <label for="id_fazenda">Fazenda</label>
+    <input type="text" name="fazenda" id="id_fazenda" value="{{ fazenda }}" autocomplete="organization" placeholder="ex.: fazenda1 ou fazenda1.localhost" required>
+    <button type="submit" class="btn">Continuar para o login</button>
+  </form>
+  <div class="row" style="margin-top: 1.5rem; flex-wrap: wrap;">
+    <span class="muted">Administração global</span>
+    <a href="{% url 'admin:index' %}">Painel admin</a>
+  </div>
+  <p class="muted" style="margin-top:1rem;font-size:0.85rem;">Equipe staff (após login no admin): <a href="{% url 'platform_metrics' %}">métricas da plataforma</a> — inquilinos, domínios e parâmetros globais.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Excluir — Agro{% endblock %}
+{% block portal_content %}
+<h1 style="margin:0 0 1rem;font-size:1.25rem;">Excluir registro</h1>
+<p class="sub">Confirma a exclusão de <strong>{{ object }}</strong>? Esta ação não pode ser desfeita.</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Excluir</button>
+  <a href="{{ cancel_url }}" class="btn btn-ghost btn-row">Cancelar</a>
+</form>
+{% endblock %}

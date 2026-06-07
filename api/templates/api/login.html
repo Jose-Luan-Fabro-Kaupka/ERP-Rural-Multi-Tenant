@@ -1,0 +1,26 @@
+{% extends "api/base.html" %}
+{% block title %}Entrar — Agro{% endblock %}
+{% block body %}
+<div class="card">
+  <h1>Entrar</h1>
+  <p class="sub">Use o mesmo domínio do tenant (ex.: fazenda1.localhost).</p>
+  {% if form.non_field_errors %}
+  <div class="errors">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    <label for="id_username">Usuário</label>
+    {{ form.username }}
+    {% if form.username.errors %}<div class="errors">{{ form.username.errors }}</div>{% endif %}
+    <label for="id_password">Senha</label>
+    {{ form.password }}
+    {% if form.password.errors %}<div class="errors">{{ form.password.errors }}</div>{% endif %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn">Entrar</button>
+  </form>
+  <div class="row">
+    <span class="muted">Não tem conta?</span>
+    <a href="{% url 'register' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Registrar-se</a>
+  </div>
+</div>
+{% endblock %}

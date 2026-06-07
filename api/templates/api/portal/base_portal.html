@@ -1,0 +1,8 @@
+{% extends "api/base.html" %}
+{% block wrap_class %}wrap wrap-wide{% endblock %}
+{% block body %}
+{% include "api/portal/_nav.html" %}
+<div class="card">
+  {% block portal_content %}{% endblock %}
+</div>
+{% endblock %}

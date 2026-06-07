@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agro-django-config
+  namespace: agro-saas
+data:
+  DB_NAME: agrodb
+  DB_USER: agro_user
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DJANGO_SETTINGS_MODULE: config.settings
+  # Inclua o host do Ingress e *.dominio para tenants; probes usam Host: agro.local
+  ALLOWED_HOSTS: "localhost,127.0.0.1,.localhost,agro.local,.agro.local"
+  # Alinha fazenda1.agro.local ao Domain cadastrado como "fazenda1" (middleware)
+  TENANT_SUBDOMAIN_BASE: "agro.local"

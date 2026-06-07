@@ -1,0 +1,45 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Aplicações de insumo — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Aplicações de insumo</h1>
+  {% if perms.api.add_aplicacaoinsumo %}
+  <a href="{% url 'aplicacao_create' %}{% if filter_plantacao_id %}?plantacao={{ filter_plantacao_id }}{% endif %}" class="btn btn-row">Nova aplicação</a>
+  {% endif %}
+</div>
+{% if filter_plantacao %}
+<p class="sub" style="margin-top:0;">
+  Filtrando por plantação <strong>{{ filter_plantacao }}</strong>.
+  <a href="{% url 'aplicacao_list' %}">Ver todas</a>
+</p>
+{% else %}
+<p class="sub" style="margin-top:0;">Uso de insumos vinculado a cada plantação (quantidade e data).</p>
+{% endif %}
+<table class="data">
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Plantação</th>
+      <th>Insumo</th>
+      <th>Quantidade</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr>
+      <td>{{ o.data_aplicacao|date:"d/m/Y" }}</td>
+      <td>{{ o.plantacao }}</td>
+      <td>{{ o.insumo.nome }}</td>
+      <td>{{ o.quantidade }}</td>
+      <td>
+        {% if perms.api.change_aplicacaoinsumo %}<a href="{% url 'aplicacao_update' o.pk %}">Editar</a>{% endif %}
+        {% if perms.api.delete_aplicacaoinsumo %}{% if perms.api.change_aplicacaoinsumo %} · {% endif %}<a href="{% url 'aplicacao_delete' o.pk %}">Excluir</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="muted">Nenhuma aplicação registrada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

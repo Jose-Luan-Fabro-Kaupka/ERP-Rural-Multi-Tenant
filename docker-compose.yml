@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: agro_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: agrodb
+      POSTGRES_USER: agro_user
+      POSTGRES_PASSWORD: agro_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    container_name: agro_api
+    command: >
+      sh -c "
+      python manage.py ensure_postgres_database &&
+      python manage.py migrate_schemas --shared &&
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2
+      "
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_NAME: agrodb
+      DB_USER: agro_user
+      DB_PASSWORD: agro_pass
+      DB_HOST: db
+      DB_PORT: 5432
+      DJANGO_SETTINGS_MODULE: config.settings
+    restart: always
+
+volumes:
+  postgres_data:

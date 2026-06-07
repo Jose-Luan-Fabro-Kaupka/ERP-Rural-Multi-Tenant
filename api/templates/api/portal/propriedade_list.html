@@ -1,0 +1,39 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Propriedades — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Propriedades</h1>
+  {% if perms.api.add_propriedade %}
+  <a href="{% url 'propriedade_create' %}" class="btn btn-row">Nova propriedade</a>
+  {% endif %}
+</div>
+<p class="sub" style="margin-top:0;">Cadastro de fazendas e áreas sob gestão (localização, código, área total).</p>
+<table class="data">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Código</th>
+      <th>Área total</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr>
+      <td>{{ o.nome }}</td>
+      <td>{{ o.codigo }}</td>
+      <td>{{ o.area_total }}</td>
+      <td style="white-space:nowrap;">
+        {% if perms.api.change_propriedade %}<a href="{% url 'propriedade_update' o.pk %}">Editar</a>{% endif %}
+        {% if perms.api.delete_propriedade %}{% if perms.api.change_propriedade %} · {% endif %}<a href="{% url 'propriedade_delete' o.pk %}">Excluir</a>{% endif %}
+        {% if perms.api.view_plantacao %} · <a href="{% url 'plantacao_list' %}?propriedade={{ o.pk }}">Plantações</a>{% endif %}
+        {% if perms.api.view_compra %} · <a href="{% url 'compra_list' %}?propriedade={{ o.pk }}">Compras</a>{% endif %}
+        {% if perms.api.view_venda %} · <a href="{% url 'venda_list' %}?propriedade={{ o.pk }}">Vendas</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="muted">Nenhuma propriedade cadastrada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

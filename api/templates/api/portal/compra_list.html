@@ -1,0 +1,47 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Compras — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Compras de insumos</h1>
+  {% if perms.api.add_compra %}
+  <a href="{% url 'compra_create' %}{% if filter_propriedade_id %}?propriedade={{ filter_propriedade_id }}{% endif %}" class="btn btn-row">Registrar compra</a>
+  {% endif %}
+</div>
+{% if filter_propriedade %}
+<p class="sub" style="margin-top:0;">
+  Filtrando por <strong>{{ filter_propriedade.nome }}</strong>.
+  <a href="{% url 'compra_list' %}">Ver todas</a>
+</p>
+{% else %}
+<p class="sub" style="margin-top:0;">Aquisições por propriedade (quantidade, preço unitário, data).</p>
+{% endif %}
+<table class="data">
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Propriedade</th>
+      <th>Insumo</th>
+      <th>Qtd</th>
+      <th>Total</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr>
+      <td>{{ o.data_compra|date:"d/m/Y" }}</td>
+      <td>{{ o.propriedade.nome }}</td>
+      <td>{{ o.insumo.nome }}</td>
+      <td>{{ o.quantidade }} {{ o.unidade }}</td>
+      <td>{{ o.total }}</td>
+      <td>
+        {% if perms.api.change_compra %}<a href="{% url 'compra_update' o.pk %}">Editar</a>{% endif %}
+        {% if perms.api.delete_compra %}{% if perms.api.change_compra %} · {% endif %}<a href="{% url 'compra_delete' o.pk %}">Excluir</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="muted">Nenhuma compra registrada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Relatórios — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Relatórios e visão geral</h1>
+  <div>
+    <a href="{% url 'relatorio_export_csv' %}" class="btn btn-ghost btn-row">Exportar CSV</a>
+    <a href="{% url 'relatorio_export_pdf' %}" class="btn btn-ghost btn-row">Exportar PDF</a>
+  </div>
+</div>
+<p class="sub" style="margin-top:0;">Resumo dos cadastros e totais financeiros do inquilino (sem IoT). CSV/PDF incluem propriedades, compras e vendas. A API em <code>/api/</code> permanece disponível.</p>
+
+<h2 class="sub" style="margin:1.5rem 0 0.75rem;font-size:0.95rem;color:var(--text);">Quantidades</h2>
+<div class="grid-cards">
+  <div class="card-tile" style="cursor:default;">
+    <h2>Propriedades</h2>
+    <p class="stat">{{ n_propriedades }}</p>
+  </div>
+  <div class="card-tile" style="cursor:default;">
+    <h2>Produtos</h2>
+    <p class="stat">{{ n_produtos }}</p>
+  </div>
+  <div class="card-tile" style="cursor:default;">
+    <h2>Insumos</h2>
+    <p class="stat">{{ n_insumos }}</p>
+  </div>
+  <div class="card-tile" style="cursor:default;">
+    <h2>Plantações</h2>
+    <p class="stat">{{ n_plantacoes }}</p>
+  </div>
+  <div class="card-tile" style="cursor:default;">
+    <h2>Compras</h2>
+    <p class="stat">{{ n_compras }}</p>
+  </div>
+  <div class="card-tile" style="cursor:default;">
+    <h2>Vendas</h2>
+    <p class="stat">{{ n_vendas }}</p>
+  </div>
+  <div class="card-tile" style="cursor:default;">
+    <h2>Aplicações</h2>
+    <p class="stat">{{ n_aplicacoes }}</p>
+  </div>
+</div>
+
+<h2 class="sub" style="margin:1.5rem 0 0.75rem;font-size:0.95rem;color:var(--text);">Totais (valor)</h2>
+<p class="muted">Soma de quantidade × preço unitário em todas as compras e vendas registradas.</p>
+<table class="data" style="max-width:420px;">
+  <tbody>
+    <tr><th>Total compras</th><td><strong>{{ total_compras }}</strong></td></tr>
+    <tr><th>Total vendas</th><td><strong>{{ total_vendas }}</strong></td></tr>
+  </tbody>
+</table>
+
+<h2 class="sub" style="margin:1.5rem 0 0.75rem;font-size:0.95rem;color:var(--text);">Por propriedade</h2>
+<table class="data">
+  <thead>
+    <tr>
+      <th>Propriedade</th>
+      <th>Plantações</th>
+      <th>Total compras</th>
+      <th>Total vendas</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in por_propriedade %}
+    <tr>
+      <td>{{ row.propriedade.nome }}</td>
+      <td>{{ row.n_plantacoes }}</td>
+      <td>{{ row.total_compras }}</td>
+      <td>{{ row.total_vendas }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="muted">Cadastre propriedades para ver o consolidado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

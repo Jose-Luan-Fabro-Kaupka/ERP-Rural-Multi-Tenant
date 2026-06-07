@@ -1,0 +1,47 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Vendas — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Vendas</h1>
+  {% if perms.api.add_venda %}
+  <a href="{% url 'venda_create' %}{% if filter_propriedade_id %}?propriedade={{ filter_propriedade_id }}{% endif %}" class="btn btn-row">Registrar venda</a>
+  {% endif %}
+</div>
+{% if filter_propriedade %}
+<p class="sub" style="margin-top:0;">
+  Filtrando por <strong>{{ filter_propriedade.nome }}</strong>.
+  <a href="{% url 'venda_list' %}">Ver todas</a>
+</p>
+{% else %}
+<p class="sub" style="margin-top:0;">Comercialização de produtos por propriedade.</p>
+{% endif %}
+<table class="data">
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Propriedade</th>
+      <th>Produto</th>
+      <th>Qtd</th>
+      <th>Total</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr>
+      <td>{{ o.data_venda|date:"d/m/Y" }}</td>
+      <td>{{ o.propriedade.nome }}</td>
+      <td>{{ o.produto.nome }}</td>
+      <td>{{ o.quantidade }} {{ o.unidade }}</td>
+      <td>{{ o.total }}</td>
+      <td>
+        {% if perms.api.change_venda %}<a href="{% url 'venda_update' o.pk %}">Editar</a>{% endif %}
+        {% if perms.api.delete_venda %}{% if perms.api.change_venda %} · {% endif %}<a href="{% url 'venda_delete' o.pk %}">Excluir</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="muted">Nenhuma venda registrada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

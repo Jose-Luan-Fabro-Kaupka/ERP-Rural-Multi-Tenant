@@ -1,0 +1,39 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Alertas — Agro{% endblock %}
+{% block portal_content %}
+<h1 style="margin:0 0 0.5rem;font-size:1.25rem;">Alertas</h1>
+<p class="sub" style="margin-top:0;">Regras automáticas sobre compras e vendas (sem sensores). Marque como lidos após análise.</p>
+<table class="data">
+  <thead>
+    <tr>
+      <th>Data</th>
+      <th>Severidade</th>
+      <th>Título</th>
+      <th>Mensagem</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr {% if not o.lido %}style="background:rgba(61,158,111,0.06);"{% endif %}>
+      <td>{{ o.created_at|date:"d/m/Y H:i" }}</td>
+      <td>{{ o.get_severidade_display }}</td>
+      <td>{{ o.titulo }}</td>
+      <td style="max-width:280px;">{{ o.mensagem|truncatewords:40 }}</td>
+      <td>
+        {% if perms.api.change_alerta and not o.lido %}
+        <form method="post" action="{% url 'alerta_marcar_lida' o.pk %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-row" style="margin:0;">Marcar lido</button>
+        </form>
+        {% elif o.lido %}
+        <span class="muted">Lido</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="muted">Nenhum alerta ativo.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

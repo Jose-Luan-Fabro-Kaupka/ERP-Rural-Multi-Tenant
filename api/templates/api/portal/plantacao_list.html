@@ -1,0 +1,48 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Plantações — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Plantações</h1>
+  {% if perms.api.add_plantacao %}
+  <a href="{% url 'plantacao_create' %}{% if filter_propriedade_id %}?propriedade={{ filter_propriedade_id }}{% endif %}" class="btn btn-row">Nova plantação</a>
+  {% endif %}
+</div>
+{% if filter_propriedade %}
+<p class="sub" style="margin-top:0;">
+  Filtrando por <strong>{{ filter_propriedade.nome }}</strong>.
+  <a href="{% url 'plantacao_list' %}">Ver todas</a>
+</p>
+{% else %}
+<p class="sub" style="margin-top:0;">Ciclos de cultivo por propriedade (talhão, área, datas, rendimento estimado).</p>
+{% endif %}
+<table class="data">
+  <thead>
+    <tr>
+      <th>Propriedade</th>
+      <th>Produto</th>
+      <th>Talhão</th>
+      <th>Área</th>
+      <th>Início</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr>
+      <td>{{ o.propriedade.nome }}</td>
+      <td>{{ o.produto.nome }}</td>
+      <td>{% if o.talhao %}{{ o.talhao }}{% else %}—{% endif %}</td>
+      <td>{{ o.area }}</td>
+      <td>{{ o.data_inicio|date:"d/m/Y" }}</td>
+      <td style="white-space:nowrap;">
+        {% if perms.api.change_plantacao %}<a href="{% url 'plantacao_update' o.pk %}">Editar</a>{% endif %}
+        {% if perms.api.delete_plantacao %}{% if perms.api.change_plantacao %} · {% endif %}<a href="{% url 'plantacao_delete' o.pk %}">Excluir</a>{% endif %}
+        {% if perms.api.view_aplicacaoinsumo %} · <a href="{% url 'aplicacao_list' %}?plantacao={{ o.pk }}">Aplicações</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" class="muted">Nenhuma plantação cadastrada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

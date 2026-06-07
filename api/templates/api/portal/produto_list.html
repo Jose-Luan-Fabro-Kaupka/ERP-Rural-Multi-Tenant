@@ -1,0 +1,36 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Produtos — Agro{% endblock %}
+{% block portal_content %}
+<div class="toolbar">
+  <h1 style="margin:0;font-size:1.25rem;">Produtos</h1>
+  {% if perms.api.add_produto %}
+  <a href="{% url 'produto_create' %}" class="btn btn-row">Novo produto</a>
+  {% endif %}
+</div>
+<p class="sub" style="margin-top:0;">Itens agrícolas produzidos ou comercializados (culturas, unidade, preço padrão).</p>
+<table class="data">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Unidade</th>
+      <th>Preço padrão</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in object_list %}
+    <tr>
+      <td>{{ o.nome }}</td>
+      <td>{{ o.unidade }}</td>
+      <td>{% if o.preco_padrao %}{{ o.preco_padrao }}{% else %}—{% endif %}</td>
+      <td>
+        {% if perms.api.change_produto %}<a href="{% url 'produto_update' o.pk %}">Editar</a>{% endif %}
+        {% if perms.api.delete_produto %}{% if perms.api.change_produto %} · {% endif %}<a href="{% url 'produto_delete' o.pk %}">Excluir</a>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="muted">Nenhum produto cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

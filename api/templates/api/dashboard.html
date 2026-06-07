@@ -1,0 +1,68 @@
+{% extends "api/portal/base_portal.html" %}
+{% block title %}Início — Agro{% endblock %}
+{% block portal_content %}
+<h1 style="margin:0 0 0.35rem;font-size:1.25rem;">Olá, {{ user.username }}</h1>
+<p class="sub" style="margin-top:0;">Gestão rural neste inquilino. O acesso às áreas depende do seu <strong>papel</strong> (gestor, editor ou leitor).</p>
+
+<div class="grid-cards">
+  {% if perms.api.view_propriedade %}
+  <a class="card-tile" href="{% url 'propriedade_list' %}">
+    <h2>Propriedades</h2>
+    <p><span class="stat">{{ n_propriedades }}</span> cadastrada(s)</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_produto %}
+  <a class="card-tile" href="{% url 'produto_list' %}">
+    <h2>Produtos</h2>
+    <p><span class="stat">{{ n_produtos }}</span> cadastrado(s)</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_insumo %}
+  <a class="card-tile" href="{% url 'insumo_list' %}">
+    <h2>Insumos</h2>
+    <p><span class="stat">{{ n_insumos }}</span> cadastrado(s)</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_plantacao %}
+  <a class="card-tile" href="{% url 'plantacao_list' %}">
+    <h2>Plantações</h2>
+    <p><span class="stat">{{ n_plantacoes }}</span> registro(s)</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_compra %}
+  <a class="card-tile" href="{% url 'compra_list' %}">
+    <h2>Compras</h2>
+    <p><span class="stat">{{ n_compras }}</span> registro(s)</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_venda %}
+  <a class="card-tile" href="{% url 'venda_list' %}">
+    <h2>Vendas</h2>
+    <p><span class="stat">{{ n_vendas }}</span> registro(s)</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_aplicacaoinsumo %}
+  <a class="card-tile" href="{% url 'aplicacao_list' %}">
+    <h2>Aplicações</h2>
+    <p><span class="stat">{{ n_aplicacoes }}</span> registro(s)</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_propriedade %}
+  <a class="card-tile" href="{% url 'relatorios' %}">
+    <h2>Relatórios</h2>
+    <p>Totais, CSV/PDF</p>
+  </a>
+  {% endif %}
+  {% if perms.api.view_alerta %}
+  <a class="card-tile" href="{% url 'alerta_list' %}">
+    <h2>Alertas</h2>
+    <p>{% if nav_alertas_nao_lidos %}<span class="stat">{{ nav_alertas_nao_lidos }}</span> não lidos{% else %}Regras automáticas{% endif %}</p>
+  </a>
+  {% endif %}
+</div>
+
+{% if not perms.api.view_propriedade and not perms.api.view_produto and not perms.api.view_insumo and not perms.api.view_plantacao and not perms.api.view_compra and not perms.api.view_venda and not perms.api.view_aplicacaoinsumo and not perms.api.view_alerta %}
+<p class="errors" style="margin-top:1rem;">Sua conta não tem permissões de visualização nos módulos. Peça ao administrador para associá-la a um grupo (<code>gestor_fazenda</code>, <code>editor_fazenda</code> ou <code>leitor_fazenda</code>).</p>
+{% endif %}
+<p class="muted" style="margin-top:1.5rem;font-size:0.85rem;">API REST com JWT: <code>/api/</code> — permissões espelham os papéis Django (grupos <code>gestor_fazenda</code>, <code>editor_fazenda</code>, <code>leitor_fazenda</code>).</p>
+{% endblock %}
