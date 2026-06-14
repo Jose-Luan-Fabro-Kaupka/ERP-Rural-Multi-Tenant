@@ -1,3 +1,4 @@
+# Tratemento de endpoints.
 from django.urls import path
 
 from . import views_web

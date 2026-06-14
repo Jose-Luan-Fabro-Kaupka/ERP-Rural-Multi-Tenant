@@ -15,7 +15,8 @@ spec:
     spec:
       initContainers:
         - name: migrate-schemas
-          image: agro-api:latest  # use a imagem buildada do projeto
+          image: agro-api:latest
+          imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
             - -c
@@ -31,6 +32,7 @@ spec:
       containers:
         - name: django
           image: agro-api:latest
+          imagePullPolicy: IfNotPresent
           command:
             - gunicorn
             - config.wsgi:application
