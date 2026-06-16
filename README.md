@@ -270,4 +270,6 @@ Universidade Tecnológica Federal do Paraná — Câmpus Dois Vizinhos
 
 ## Licença
 
-Este projeto foi desenvolvido para fins acadêmicos.
+Este projeto está licenciado sob a MIT License. Consulte o arquivo `LICENSE` para mais detalhes.
+
+O código pode ser utilizado, copiado, modificado e redistribuído livremente, sem garantia ou suporte obrigatório do autor. Contribuições externas por commit direto não são permitidas; sugestões podem ser feitas por fork ou pull request, a critério do mantenedor.
