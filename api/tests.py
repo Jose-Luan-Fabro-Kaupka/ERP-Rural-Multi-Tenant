@@ -177,6 +177,7 @@ class RelatoriosWebTest(TenantTestCase):
         self.assertIn("Fertilizante X", body)
         self.assertIn("VENDAS", body)
         self.assertIn("Milho", body)
+        _salvar_relatorio("relatorio_agro.csv", r.content)
 
     def test_export_pdf_bytes_magic(self):
         self.client.login(username="reluser", password="secret123")
@@ -184,6 +185,7 @@ class RelatoriosWebTest(TenantTestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r["Content-Type"], "application/pdf")
         self.assertTrue(r.content.startswith(b"%PDF"))
+        _salvar_relatorio("relatorio_agro.pdf", r.content)
 
 
 class HealthzViewTest(SimpleTestCase):
@@ -205,12 +207,23 @@ class HealthzTenantUrlTest(TenantTestCase):
 
 
 import json
+import os
 
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Alerta
 from customers.models import GlobalConfig
+
+
+def _salvar_relatorio(nome, conteudo):
+    if not os.environ.get("SAVE_REPORTS"):
+        return
+    destino = os.path.join(settings.BASE_DIR, "Cache")
+    os.makedirs(destino, exist_ok=True)
+    with open(os.path.join(destino, nome), "wb") as fh:
+        fh.write(conteudo)
 
 
 class JWTAuthTest(TenantTestCase):
@@ -359,3 +372,93 @@ class GlobalConfigTest(TenantTestCase):
         self.assertEqual(c2.pk, 1)
         self.assertEqual(c2.max_tenants, 7)
         self.assertEqual(GlobalConfig.objects.count(), 1)
+
+
+class RelatorioVolumosoTest(TenantTestCase):
+    """Gera um volume maior de dados e exporta o relatório consolidado."""
+
+    N_PROPRIEDADES = 30
+    COMPRAS_POR_PROPRIEDADE = 12
+    VENDAS_POR_PROPRIEDADE = 12
+    PLANTACOES_POR_PROPRIEDADE = 5
+
+    def setUp(self):
+        self.client = TenantClient(self.tenant)
+        User = get_user_model()
+        self.user = User.objects.create_superuser(
+            username="reladmin", password="segredo123", email="rel@a.com"
+        )
+        produtos = [
+            Produto.objects.create(nome=f"Produto {i}", unidade="t")
+            for i in range(1, 13)
+        ]
+        insumos = [
+            Insumo.objects.create(nome=f"Insumo {i}", tipo="Quimico")
+            for i in range(1, 13)
+        ]
+        self.total_compras = Decimal("0")
+        self.total_vendas = Decimal("0")
+        for p in range(1, self.N_PROPRIEDADES + 1):
+            prop = Propriedade.objects.create(
+                nome=f"Fazenda {p:02d}",
+                codigo=f"FZ{p:03d}",
+                localizacao=f"Regiao {p}",
+                area_total=Decimal("100.00") + p,
+            )
+            for k in range(self.PLANTACOES_POR_PROPRIEDADE):
+                Plantacao.objects.create(
+                    propriedade=prop,
+                    produto=produtos[k % len(produtos)],
+                    talhao=f"T{k + 1}",
+                    area=Decimal("10.00") + k,
+                    data_inicio=date(2024, (k % 12) + 1, 1),
+                )
+            for c in range(self.COMPRAS_POR_PROPRIEDADE):
+                qtd = Decimal(c + 1)
+                preco = Decimal("50.00") + c
+                Compra.objects.create(
+                    propriedade=prop,
+                    insumo=insumos[c % len(insumos)],
+                    quantidade=qtd,
+                    unidade="t",
+                    preco_unitario=preco,
+                    data_compra=date(2024, (c % 12) + 1, (c % 27) + 1),
+                )
+                self.total_compras += qtd * preco
+            for v in range(self.VENDAS_POR_PROPRIEDADE):
+                qtd = Decimal(v + 2)
+                preco = Decimal("120.00") + v
+                Venda.objects.create(
+                    propriedade=prop,
+                    produto=produtos[v % len(produtos)],
+                    quantidade=qtd,
+                    unidade="t",
+                    preco_unitario=preco,
+                    data_venda=date(2024, (v % 12) + 1, (v % 27) + 1),
+                )
+                self.total_vendas += qtd * preco
+
+    def test_gera_relatorio_completo(self):
+        self.assertEqual(Propriedade.objects.count(), self.N_PROPRIEDADES)
+        self.assertEqual(
+            Compra.objects.count(),
+            self.N_PROPRIEDADES * self.COMPRAS_POR_PROPRIEDADE,
+        )
+        self.assertEqual(
+            Venda.objects.count(),
+            self.N_PROPRIEDADES * self.VENDAS_POR_PROPRIEDADE,
+        )
+
+        self.client.login(username="reladmin", password="segredo123")
+
+        rc = self.client.get("/relatorios/exportar/csv/")
+        self.assertEqual(rc.status_code, 200)
+        body = rc.content.decode("utf-8-sig")
+        for p in range(1, self.N_PROPRIEDADES + 1):
+            self.assertIn(f"FZ{p:03d}", body)
+        _salvar_relatorio("relatorio_agro_completo.csv", rc.content)
+
+        rp = self.client.get("/relatorios/exportar/pdf/")
+        self.assertEqual(rp.status_code, 200)
+        self.assertTrue(rp.content.startswith(b"%PDF"))
+        _salvar_relatorio("relatorio_agro_completo.pdf", rp.content)

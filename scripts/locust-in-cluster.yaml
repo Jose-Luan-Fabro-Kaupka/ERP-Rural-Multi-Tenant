@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: locust-scripts
+  namespace: agro-saas
+data:
+  locustfile.py: |
+    import os
+    from locust import HttpUser, between, task
+
+
+    class AgroAPIUser(HttpUser):
+        wait_time = between(0.5, 2.5)
+
+        def on_start(self):
+            self.token = None
+            self.tenant_host = os.environ.get("LOCUST_TENANT_HOST", "").strip()
+            user = os.environ.get("LOCUST_USERNAME", "").strip()
+            password = os.environ.get("LOCUST_PASSWORD", "").strip()
+            if not user or not password:
+                return
+            resp = self.client.post(
+                "/api/auth/token/",
+                json={"username": user, "password": password},
+                headers=self._auth_headers(),
+                name="/api/auth/token/",
+            )
+            if resp.status_code == 200:
+                self.token = resp.json().get("access")
+
+        def _auth_headers(self):
+            h = {"Content-Type": "application/json"}
+            if self.tenant_host:
+                h["Host"] = self.tenant_host
+            return h
+
+        def _headers(self):
+            h = self._auth_headers()
+            if self.token:
+                h["Authorization"] = f"Bearer {self.token}"
+            return h
+
+        @task(4)
+        def list_propriedades(self):
+            self.client.get("/api/propriedades/", headers=self._headers(), name="/api/propriedades/")
+
+        @task(3)
+        def list_produtos(self):
+            self.client.get("/api/produtos/", headers=self._headers(), name="/api/produtos/")
+
+        @task(3)
+        def list_insumos(self):
+            self.client.get("/api/insumos/", headers=self._headers(), name="/api/insumos/")
+
+        @task(2)
+        def list_plantacoes(self):
+            self.client.get("/api/plantacoes/", headers=self._headers(), name="/api/plantacoes/")
+
+        @task(2)
+        def list_alertas(self):
+            self.client.get("/api/alertas/", headers=self._headers(), name="/api/alertas/")
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: locust-runner
+  namespace: agro-saas
+  labels:
+    app: locust-runner
+spec:
+  restartPolicy: Never
+  containers:
+    - name: locust
+      image: locustio/locust:2.43.4
+      imagePullPolicy: IfNotPresent
+      workingDir: /opt/locust
+      env:
+        - name: LOCUST_USERNAME
+          value: "locust"
+        - name: LOCUST_PASSWORD
+          value: "locust123"
+        - name: LOCUST_TENANT_HOST
+          value: "loadtest.localhost"
+        - name: LOCUST_HOST_URL
+          value: "http://django-api.agro-saas.svc.cluster.local"
+      # Loop infinito para o pod ficar de pé enquanto orquestramos cenários via kubectl exec.
+      command: ["sh", "-c"]
+      args:
+        - "mkdir -p /output && echo 'locust-runner pronto' && sleep infinity"
+      volumeMounts:
+        - name: locust-scripts
+          mountPath: /opt/locust
+        - name: output
+          mountPath: /output
+  volumes:
+    - name: locust-scripts
+      configMap:
+        name: locust-scripts
+    - name: output
+      emptyDir: {}
